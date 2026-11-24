@@ -1,0 +1,34 @@
+name: Velox Parquet BOOLEAN on ARM64
+
+on:
+  push:
+    branches: [ci/parquet-bool-arm64]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compare decoder implementations on a pinned core
+        run: |
+          clang_compiler=clang++
+          gcc_compiler=g++
+          if command -v clang++-20 >/dev/null; then
+            clang_compiler=clang++-20
+          fi
+          if command -v g++-14 >/dev/null; then
+            gcc_compiler=g++-14
+          fi
+          bash run.sh "$clang_compiler" "$gcc_compiler"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: parquet-boolean-arm64
+          path: results/
