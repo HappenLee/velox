@@ -30,7 +30,10 @@ if [[ -z ${FOLLY_SOURCE:-} ]]; then
   curl --fail --silent --show-error --location --retry 3 "$url" --output "$archive"
   printf '%s  %s\n' 'f114713009738faa49961aeaa050592a09a4c8a7b46ba9a0780d4aaba468173b' "$archive" | sha256sum -c
   mkdir -p "$FOLLY_SOURCE"
-  tar -xzf "$archive" --strip-components=1 -C "$FOLLY_SOURCE"
+  tar -xzf "$archive" -C "$FOLLY_SOURCE"
+  header=$(find "$FOLLY_SOURCE" -path "/*/folly/lang/Bits.h" -print -quit)
+  test -n "$header"
+  FOLLY_SOURCE=${header%/folly/lang/Bits.h}
 fi
 printf 'Velox revision: %s\nFolly release: %s\n' "$revision" "$folly_version" | tee results/sources.txt
 flags=(-O3 -DNDEBUG -std=c++20 -DFOLLY_NO_CONFIG -Icompat -I"$VELOX_SOURCE" -isystem "$FOLLY_SOURCE")
